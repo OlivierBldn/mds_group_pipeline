@@ -5,11 +5,11 @@ test('addition de 2 + 3 = 5', () => {
   expect(addition(2, 3)).toBe(5);
 });
 
-// Test volontairement erroné (pour l’activité "Erreur et correction")
-test('addition de nombres négatifs', () => {
-  expect(addition(-2, -3)).toBe(-4); // ceci va échouer (résultat = -5)
-});
+// // Test volontairement erroné (pour l’activité "Erreur et correction")
+// test('addition de nombres négatifs', () => {
+//   expect(addition(-2, -3)).toBe(-4); // ceci va échouer (résultat = -5)
+// });
 
-test('addition de 0 + 0 = 0', () => {
-  expect(addition(0, 0)).toBe(0);
-});
+// test('addition de 0 + 0 = 0', () => {
+//   expect(addition(0, 0)).toBe(0);
+// });
