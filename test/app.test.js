@@ -9,7 +9,3 @@ test('addition de 2 + 3 = 5', () => {
 // test('addition de nombres négatifs', () => {
 //   expect(addition(-2, -3)).toBe(-4); // ceci va échouer (résultat = -5)
 // });
-
-// test('addition de 0 + 0 = 0', () => {
-//   expect(addition(0, 0)).toBe(0);
-// });
