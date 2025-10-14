@@ -1,5 +1,5 @@
 function addition(a, b) {
   return a + b;
 }
-// Export the function for use in other files
+// Export the function for use in oth
 module.exports = { addition };
