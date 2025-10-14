@@ -1,5 +1,5 @@
 function addition(a, b) {
   return a + b;
 }
-//Export ttion for
+//Export ttion fo
 module.exports = { addition };
