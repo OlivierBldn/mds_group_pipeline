@@ -8,4 +8,5 @@ RUN npm install --production --no-audit --no-fund
 
 COPY . .
 
+
 CMD ["node", "app.js"]
