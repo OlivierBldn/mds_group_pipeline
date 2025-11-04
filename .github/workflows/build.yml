@@ -15,21 +15,62 @@ jobs:
       - run: npm install
       - run: npm ci
       - run: npm test
+
   build:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v5
-    - name: Login to Scaleway Container Registry
-      if: contains(github.event.head_commit.message, '#deploy')
-      uses: docker/login-action@v3
-      with:
-        username: nologin
-        password: ${{ secrets.SCALEWAY_API_KEY }}
-        registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
-    - name: Build the Docker image
-      if: contains(github.event.head_commit.message, '#deploy')
-      run: docker build . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/lemaroishuetblandin
-    - name: Push the Docker Image
-      if: contains(github.event.head_commit.message, '#deploy')
-      run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/lemaroishuetblandin
     needs: test
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Login to Scaleway Container Registry
+        if: contains(github.event.head_commit.message, '#deploy')
+        uses: docker/login-action@v3
+        with:
+          username: nologin
+          password: ${{ secrets.SCALEWAY_API_KEY }}
+          registry: ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}
+
+      - name: Build the Docker image
+        if: contains(github.event.head_commit.message, '#deploy')
+        run: docker build . -t ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/lemaroishuetblandin
+
+      - name: Push the Docker Image
+        if: contains(github.event.head_commit.message, '#deploy')
+        run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/lemaroishuetblandin
+
+  slackNotification:
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    steps:
+    - name: Slack Notification
+      if: always()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        # Use action's status coloring logic
+        SLACK_COLOR: ${{ (needs.test.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped' || needs.build.result == null)) && 'success' || needs.test.result == 'cancelled' && 'cancelled' || 'failure' }}
+        # Send your structured Slack message as a custom payload (this overrides other fields)
+        SLACK_CUSTOM_PAYLOAD: |
+          {
+            "text": ":rocket: Pipeline *${{ github.workflow }}* — ${{ (needs.test.result == 'success' && (needs.build.result == 'success' || needs.build.result == null)) && 'SUCCESS' || needs.test.result == 'cancelled' && 'CANCELLED' || 'FAILURE' }}",
+            "attachments": [
+              {
+                "color": "${{ (needs.test.result == 'success' && (needs.build.result == 'success' || needs.build.result == null)) && 'good' || needs.test.result == 'cancelled' && 'warning' || 'danger' }}",
+                "title": "${{ github.repository }}",
+                "title_link": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "fields": [
+                  { "title": "Workflow", "value": "${{ github.workflow }}", "short": true },
+                  { "title": "Run", "value": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}>", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
+                  { "title": "Commit", "value": "<${{ github.event.compare }}|${{ github.sha }}>", "short": false },
+                  { "title": "Triggered by", "value": "${{ github.actor }}", "short": true },
+                  { "title": "Test job", "value": "${{ needs.test.result }}", "short": true },
+                  { "title": "Build job", "value": "${{ needs.build.result || 'skipped' }}", "short": true }
+                ],
+                "footer": "GitHub Actions",
+                "mrkdwn_in": ["text", "fields"]
+              }
+            ]
+          }
+        run: echo "Slack notification sent."
+
