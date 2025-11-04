@@ -65,3 +65,7 @@ jobs:
                             }
                         ]
                     }
+        run: |
+          echo "Sending Slack notification..."
+          ./entrypoint.sh
+          
