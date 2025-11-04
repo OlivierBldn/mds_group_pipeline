@@ -37,6 +37,7 @@ jobs:
         run: docker push ${{ secrets.CONTAINER_REGISTRY_ENDPOINT }}/lemaroishuetblandin
 
   slackNotification:
+    if: always()
     runs-on: ubuntu-latest
     needs: [test, build]
     steps:
@@ -71,6 +72,3 @@ jobs:
             ]
           }
         run: echo "Slack notification sent."
-
-
-        
